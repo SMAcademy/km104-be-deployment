@@ -1,0 +1,89 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Hava Tahmin</h1>
+</div>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-end">
+            <button id="refreshButton" type="button" class="btn btn-outline-primary" title="Yenile" onclick="refreshTable()">
+                <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+        </div>
+    </div>
+    <div class="col-12">
+        <!-- We will create a bootstrap table to show weather forecast with a refresh button -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Tarih</th>
+                    <th scope="col">Hava Durumu</th>
+                    <th scope="col">Sıcaklık (C)</th>
+                    <th scope="col">Sıcaklık (F)</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // We will create a function to refresh the weather forecast table
+
+        const btn = document.getElementById('refreshButton');
+        const icon = btn.querySelector('i');
+
+        const disableAndRotateBtn = () => {
+            btn.classList.add('disabled');
+            icon.classList.add('fa-spin');
+        };
+
+        const enableAndStopRotatingBtn = () => {
+            btn.classList.remove('disabled');
+            icon.classList.remove('fa-spin');
+        };
+
+        const refreshTable = async () => {
+            disableAndRotateBtn();
+            // We will send a GET request to the server to get the latest weather forecast
+            await fetch('@(Url.Action("GetWeatherForecast", "Home"))')
+                .then(response => response.json())
+                .then(data => {
+                    // We will clear the table body
+                    const tableBody = document.getElementById('table-body');
+                    tableBody.innerHTML = '';
+                    // We will add the new weather forecast to the table
+                    if(data.length === 0){
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="text-center fst-italic text-secondary" style="background-color:bbb">Hava tahmini bulunamadı.</td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    data.forEach(forecast => {
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td>${forecast.date}</td>
+                                <td>${forecast.summary}</td>
+                                <td>${forecast.temperatureC}</td>
+                                <td>${forecast.temperatureF}</td>
+                            </tr>
+                        `;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+            enableAndStopRotatingBtn();
+        }
+        // We will call the refreshTable function when the page is loaded
+        refreshTable();
+    </script>
+
+}
