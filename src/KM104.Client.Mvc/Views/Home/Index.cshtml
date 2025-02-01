@@ -33,20 +33,40 @@
 @section Scripts {
     <script>
         // We will create a function to refresh the weather forecast table
-        function refreshTable() {
-            const btn = document.getElementById('refreshButton');
-            const icon = btn.querySelector('i');
+
+        const btn = document.getElementById('refreshButton');
+        const icon = btn.querySelector('i');
+
+        const disableAndRotateBtn = () => {
             btn.classList.add('disabled');
             icon.classList.add('fa-spin');
+        };
+
+        const enableAndStopRotatingBtn = () => {
+            btn.classList.remove('disabled');
+            icon.classList.remove('fa-spin');
+        };
+
+        const refreshTable = async () => {
+            disableAndRotateBtn();
             // We will send a GET request to the server to get the latest weather forecast
-            fetch('@(Url.Action("GetWeatherForecast", "Home"))')
+            await fetch('@(Url.Action("GetWeatherForecast", "Home"))')
                 .then(response => response.json())
                 .then(data => {
                     // We will clear the table body
-                    document.getElementById('table-body').innerHTML = '';
+                    const tableBody = document.getElementById('table-body');
+                    tableBody.innerHTML = '';
                     // We will add the new weather forecast to the table
+                    if(data.length === 0){
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="text-center fst-italic text-secondary" style="background-color:bbb">Hava tahmini bulunamadı.</td>
+                            </tr>
+                        `;
+                        return;
+                    }
                     data.forEach(forecast => {
-                        document.getElementById('table-body').innerHTML += `
+                        tableBody.innerHTML += `
                             <tr>
                                 <td>${forecast.date}</td>
                                 <td>${forecast.summary}</td>
@@ -55,15 +75,12 @@
                             </tr>
                         `;
                     });
-
-                    btn.classList.remove('disabled');
-                    icon.classList.remove('fa-spin');
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    btn.classList.remove('disabled');
-                    icon.classList.remove('fa-spin');
                 });
+
+            enableAndStopRotatingBtn();
         }
         // We will call the refreshTable function when the page is loaded
         refreshTable();

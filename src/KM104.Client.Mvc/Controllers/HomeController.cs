@@ -9,6 +9,7 @@ namespace KM104.Client.Mvc.Controllers
         IHttpClientFactory httpClientFactory) : Controller
     {
         private HttpClient ApiClient => httpClientFactory.CreateClient("api");
+
         public IActionResult Index()
         {
             return View();
@@ -19,11 +20,17 @@ namespace KM104.Client.Mvc.Controllers
         {
             try
             {
-                await Task.Delay(500, cancellationToken);
+                int delay = 500 + Random.Shared.Next(1500);
+                await Task.Delay(delay, cancellationToken);
+                var possibility = Random.Shared.Next(100);
+                if (possibility >= 70)
+                {
+                    return Json(Array.Empty<WeatherForecast>());
+                }
                 var response = await ApiClient.GetAsync("/weatherforecast", cancellationToken);
                 response.EnsureSuccessStatusCode();
                 var data = await response.Content.ReadFromJsonAsync<List<WeatherForecast>>(cancellationToken: cancellationToken);
-                return Json(data);
+                return Json(data ?? []);
             }
             catch (Exception ex)
             {
@@ -31,6 +38,7 @@ namespace KM104.Client.Mvc.Controllers
                 return Json(Array.Empty<WeatherForecast>());
             }
         }
+
         public IActionResult Privacy()
         {
             return View();
