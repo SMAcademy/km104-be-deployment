@@ -1,0 +1,6 @@
+@KM104.Backend.Api_HostAddress = http://localhost:5030
+
+GET {{KM104.Backend.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
